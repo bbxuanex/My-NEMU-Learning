@@ -15,6 +15,7 @@
 
 #include <isa.h>
 #include "local-include/reg.h"
+#include<stdio.h>
 
 const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -24,6 +25,17 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
+  int length = sizeof(cpu.gpr) / sizeof(cpu.gpr[0]); // 应该是 32
+
+  for (int i = 0; i < length; i++)
+  {
+    // %-4s: 左对齐，占4个字符宽
+    // 0x%08x: 十六进制打印，占8位，不足补0
+    printf("%-4s 0x%08x %d\n", reg_name(i), cpu.gpr[i], cpu.gpr[i]);
+  }
+
+  // 别忘了打印 PC (Program Counter)
+  printf("pc   0x%08x %d\n", cpu.pc, cpu.pc);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {

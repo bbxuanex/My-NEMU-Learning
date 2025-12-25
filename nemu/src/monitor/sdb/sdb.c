@@ -19,6 +19,7 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <stdlib.h>
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -74,6 +75,45 @@ static int cmd_si(char *args)
   return 0;
 }
 
+static int cmd_x(char *args)
+{
+  if (args == NULL)
+  {
+    printf("Help: x N EXPR\n");
+    return 0;
+  }
+
+  char *n_str = strtok(args, " ");
+  if (n_str == NULL)
+  {
+    printf("Missing argument N\n");
+    return 0;
+  }
+  int n = atoi(n_str);
+
+  char *addr_str = strtok(NULL, " ");
+  if (addr_str == NULL)
+  {
+    printf("Missing argument EXPR\n");
+    return 0;
+  }
+
+  vaddr_t addr;
+  sscanf(addr_str, "%x", &addr);
+
+  printf("Address    Data\n");
+  for (int i = 0; i < n; i++)
+  {
+    uint32_t data = vaddr_read(addr, 4);
+
+    printf("0x%08x: 0x%08x\n", addr, data);
+
+    addr += 4;
+  }
+
+  return 0;
+}
+
 static int cmd_info(char *args)
 {
   if (args == NULL)
@@ -110,7 +150,8 @@ static struct
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
     {"si", "Step N instruction", cmd_si},
-    {"info","Display program status (r: registers,w: watchpoints)",cmd_info},
+    {"info", "Display program status (r: registers,w: watchpoints)", cmd_info},
+    {"x", "Scan memory (x N EXPR)", cmd_x},
 
     /* TODO: Add more commands */
 

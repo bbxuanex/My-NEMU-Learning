@@ -74,6 +74,30 @@ static int cmd_si(char *args)
   return 0;
 }
 
+static int cmd_info(char *args)
+{
+  if (args == NULL)
+  {
+    printf("Missing argument. Try 'r' or 'w'\n");
+    return 0;
+  }
+
+  if (strcmp(args, "r") == 0)
+  {
+    isa_reg_display();
+  }
+  else if (strcmp(args, "w") == 0)
+  {
+    // TODO: handle watchpoints
+    printf("Watchpoints not implemented yet.\n");
+  }
+  else
+  {
+    printf("Unknown argument: %s\n", args);
+  }
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct
@@ -86,6 +110,7 @@ static struct
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
     {"si", "Step N instruction", cmd_si},
+    {"info r","Display program status (r: registers,w: watchpoints)",cmd_info},
 
     /* TODO: Add more commands */
 

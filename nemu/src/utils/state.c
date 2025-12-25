@@ -14,7 +14,7 @@
  ***************************************************************************************/
 
 #include <utils.h>
-#include <stdio.h> // 引入这个头文件，不然 printf 会报错
+#include <stdio.h> 
 
 NEMUState nemu_state = { .state = NEMU_STOP };
 
@@ -22,10 +22,6 @@ int is_exit_status_bad()
 {
   int good = (nemu_state.state == NEMU_END && nemu_state.halt_ret == 0) ||
              (nemu_state.state == NEMU_QUIT);
-
-  // 🔴 监控代码：打印出当前的状态值
-  // state: 当前状态, QUIT: 退出状态的标准值, good: 判断结果
   printf("DEBUG: state=%d, QUIT=%d, good=%d\n", nemu_state.state, NEMU_QUIT, good);
-
   return !good;
 }

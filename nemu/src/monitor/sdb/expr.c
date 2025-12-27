@@ -112,6 +112,10 @@ static bool make_token(char *e)
           // Do nothing for spaces, just skip
           break;
         case TK_REG:
+          // 在成功匹配并添加 token 后
+          printf("DEBUG make_token: matched '%.*s' as type %d\n",
+                 substr_len, substr_start, rules[i].token_type);
+
           tokens[nr_token].type = TK_REG;
           if (substr_len < 32)
           {
@@ -237,7 +241,8 @@ static word_t eval(int p, int q)
   {
     // Base case: single number
     // Convert string to unsigned long. 0 means auto-detect base (10 or 16)
-    printf("DEBUG: eval single token. Type: %d, Str: %s\n", tokens[p].type, tokens[p].str);
+    // 在 make_token() 匹配成功后
+
     if (tokens[p].type == TK_REG)
     {
       bool success;

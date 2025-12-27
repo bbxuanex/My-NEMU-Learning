@@ -46,6 +46,52 @@ static char *rl_gets()
 
   return line_read;
 }
+static int cmd_test(char *args)
+{
+  FILE *fp = fopen("input.txt", "r");
+  if (fp == NULL)
+  {
+    printf("Error: Could not open input.txt\n");
+    return 0;
+  }
+
+  word_t expected_val;
+  char expression[65536];
+  int count = 0;
+
+  printf("Start testing...\n");
+
+  // Read line by line: "Result Expression"
+  while (fscanf(fp, "%u %[^\n]", &expected_val, expression) != EOF)
+  {
+    bool success = false;
+    word_t actual_val = expr(expression, &success);
+
+    if (!success)
+    {
+      printf("❌ Test %d failed: Evaluation error\n", count);
+      printf("   Expr: %s\n", expression);
+      break;
+    }
+
+    if (actual_val != expected_val)
+    {
+      printf("❌ Test %d failed: Wrong answer\n", count);
+      printf("   Expr:     %s\n", expression);
+      printf("   Expected: %u\n", expected_val);
+      printf("   Got:      %u\n", actual_val);
+      break;
+    }
+
+    count++;
+    if (count % 100 == 0)
+      printf("Passed %d tests...\n", count);
+  }
+
+  printf("✅ Testing finished. %d tests passed!\n", count);
+  fclose(fp);
+  return 0;
+}
 
 static int cmd_c(char *args)
 {
@@ -169,12 +215,13 @@ static struct
   int (*handler)(char *);
 } cmd_table[] = {
     {"help", "Display information about all supported commands", cmd_help},
+    {"test", "Brute force test using input.txt", cmd_test},
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
     {"si", "Step N instruction", cmd_si},
     {"info", "Display program status (r: registers,w: watchpoints)", cmd_info},
     {"x", "Scan memory (x N EXPR)", cmd_x},
-    {"p", "Evaluate expression",cmd_p},
+    {"p", "Evaluate expression", cmd_p},
 
     /* TODO: Add more commands */
 

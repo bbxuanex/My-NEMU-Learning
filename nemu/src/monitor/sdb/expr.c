@@ -118,6 +118,10 @@ static bool make_token(char *e) {
         default:
           tokens[nr_token].type = rules[i].token_type;
           nr_token++;
+          if (nr_token >= 65536)
+          {
+            panic("Token 太多啦！请把 tokens 数组改得更大！");
+          }
           break;
         }
         break;

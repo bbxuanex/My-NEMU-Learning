@@ -262,12 +262,16 @@ static word_t eval(int p, int q)
     case '*':
       return val1 * val2;
     case '/':
-      // Avoid division by zero
-      return (val2 == 0 ? 0 : val1 / val2);
+      if (val2 == 0)
+      {
+        printf("Error: Division by zero\n");
+        return 0;
+      }
+      return (word_t)((int)val1 / (int)val2);
     case TK_EQ:
       return val1 == val2;
     default:
-      assert(0); // Should not reach here
+      assert(0);
     }
   }
   return 0;

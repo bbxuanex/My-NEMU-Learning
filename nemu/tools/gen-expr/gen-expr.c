@@ -134,8 +134,8 @@ int main(int argc, char *argv[])
     int ret = system("gcc /tmp/.code.c -o /tmp/.expr 2>/dev/null");
     if (ret != 0)
       continue;
+    fp = popen("/tmp/.expr 2>/dev/null", "r");
 
-    fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
 
     int result;

@@ -120,8 +120,12 @@ static bool make_token(char *e) {
           nr_token++;                                  // 记得这里也要加
           break;                                       // ❌ 加上 break，不要穿透到 default
         default:
+          strncpy(tokens[nr_token].str, substr_start, substr_len);
+          tokens[nr_token].str[substr_len] = '\0';
+
           tokens[nr_token].type = rules[i].token_type;
           nr_token++;
+          break;
           if (nr_token >= 65536)
           {
             panic("Token 太多啦！请把 tokens 数组改得更大！");
@@ -143,30 +147,28 @@ static bool make_token(char *e) {
 
 static bool check_parentheses(int p, int q)
 {
-  // If the expression does not start with '(' or end with ')', return false
   if (tokens[p].type != '(' || tokens[q].type != ')')
   {
     return false;
   }
 
-  int balance = 0; // Counter for parenthesis balance
-
-  // Iterate from p to q-1 (exclude the last parenthesis)
+  int n = 0;
   for (int i = p; i < q; i++)
-  {
+  { 
     if (tokens[i].type == '(')
-      balance++;
+      n++;
     if (tokens[i].type == ')')
-      balance--;
+      n--;
 
-    // If balance becomes 0, it means the first '(' is closed before the end
-    // Example: (1 + 2) * (3 + 4) -> returns false
-    if (balance == 0)
+    if (n == 0)
       return false;
   }
 
-  // If loop finishes, check if parentheses are balanced
-  return balance == 0;
+ 
+  if (tokens[q].type == ')')
+    n--;
+
+  return n == 0;
 }
 
 static int find_main_operator(int p, int q)

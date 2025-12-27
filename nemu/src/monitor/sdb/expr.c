@@ -137,7 +137,7 @@ static bool make_token(char *e) {
       return false;
     }
   }
-
+  printf("【调试】make_token 成功结束！共识别 %d 个 Token\n", nr_token);
   return true;
 }
 

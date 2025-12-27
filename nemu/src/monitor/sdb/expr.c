@@ -232,6 +232,7 @@ int find_main_operator(int p, int q)
 
 static word_t eval(int p, int q)
 {
+  printf("DEBUG eval: p=%d, q=%d\n", p, q);
   if (p > q)
   {
     // Bad expression

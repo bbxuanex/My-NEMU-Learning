@@ -85,6 +85,7 @@ static bool make_token(char *e) {
   int position = 0;
   int i;
   regmatch_t pmatch;
+  printf("【调试】我是新程序！数组大小是 65536！nr_token地址: %p\n", &nr_token);
 
   nr_token = 0;
 

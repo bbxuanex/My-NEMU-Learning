@@ -171,58 +171,61 @@ static bool check_parentheses(int p, int q)
   return n == 0;
 }
 
-static int find_main_operator(int p, int q)
+int find_main_operator(int p, int q)
 {
-  int op = -1;         // Position of the main operator
-  int balance = 0;     // Parenthesis level
-  int current_pri = 0; // Priority of current operator
-  int best_pri = 0;    // Priority of the best operator found so far
+  int op = -1;      // 记录主运算符的位置
+  int paren = 0;    // 括号计数
+  int min_prec = 0; // 当前记录的最低优先级（数值越大，优先级越高，我们想要最低的）
+                    // 设定：+ - 优先级为 1， * / 优先级为 2
 
   for (int i = p; i <= q; i++)
   {
-    int type = tokens[i].type;
-
-    // Handle parentheses: skip content inside them
-    if (type == '(')
+    // 1. 跳过括号内的内容
+    if (tokens[i].type == '(')
     {
-      balance++;
+      paren++;
       continue;
     }
-    if (type == ')')
+    if (tokens[i].type == ')')
     {
-      balance--;
+      paren--;
       continue;
     }
+    if (paren > 0)
+      continue; // 如果在括号里，直接跳过
 
-    // Only look for operators outside of parentheses
-    if (balance != 0)
-      continue;
+    // 2. 判断当前 Token 是不是运算符，并获取它的优先级
+    int curr_prec = 0;
 
-    // Skip numbers (they are not operators)
-    if (type == TK_DEC || type == TK_HEX)
-      continue;
+    // 注意：这里要根据你自己的 enum 定义来修改
+    // 如果你的 type 就是字符本身（比如 '+'），就这样写：
+    if (tokens[i].type == '+' || tokens[i].type == '-')
+      curr_prec = 1;
+    else if (tokens[i].type == '*' || tokens[i].type == '/')
+      curr_prec = 2;
 
-    // Assign priority (smaller number = lower priority = main operator)
-    if (type == TK_EQ)
-      current_pri = 1; // Lowest priority
-    else if (type == '+' || type == '-')
-      current_pri = 4;
-    else if (type == '*' || type == '/')
-      current_pri = 5; // Highest priority
+    // 如果你用的是 TK_PLUS 这种 enum，请改成对应的 case
+    // else if (tokens[i].type == TK_EQ) ... (这是后续 PA 可能会有的)
+
     else
-      continue; // Not a supported operator
+      continue; // 不是运算符（是数字），跳过
 
-    // Update main operator if:
-    // 1. No operator found yet (op == -1)
-    // 2. Found an operator with lower or equal priority (right-associativity)
-    if (op == -1 || current_pri <= best_pri)
+    // 3. 核心逻辑：寻找“优先级最低”且“最右边”的运算符
+    // 这里的 <= 是关键！
+    // 当优先级相同时，我们更新 op，这样就能取到更靠右的那个
+    // 例如 1 + 2 + 3，遇到第二个 + 时，优先级一样，更新 op，主运算符变成第二个 +
+    // 这样分割成 (1+2) + 3，先算左边，符合左结合律
+
+    if (op == -1 || curr_prec <= min_prec)
     {
       op = i;
-      best_pri = current_pri;
+      min_prec = curr_prec;
     }
   }
+
   return op;
 }
+
 static word_t eval(int p, int q)
 {
   if (p > q)

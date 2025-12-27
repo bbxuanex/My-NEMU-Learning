@@ -21,7 +21,7 @@
 
 // 缓冲区定义
 static char buf[65536] = {};
-static int buf_pos = 0; // 【新增】记录当前缓冲区写入位置
+static int buf_pos = 0;
 
 static char code_buf[65536 + 128] = {};
 static char *code_format =
@@ -32,7 +32,6 @@ static char *code_format =
     "  return 0; "
     "}";
 
-// 【新增】辅助函数：向 buf 追加字符串
 static void gen(char *str)
 {
   int len = strlen(str);
@@ -42,15 +41,13 @@ static void gen(char *str)
   buf_pos += len;
 }
 
-// 【新增】生成随机数字
 static void gen_num()
 {
   char str[32];
-  sprintf(str, "%d", rand() % 100); // 生成 0-99 的数字
+  sprintf(str, "%d", rand() % 100);
   gen(str);
 }
 
-// 【新增】生成随机运算符
 static void gen_rand_op()
 {
   switch (rand() % 4)
@@ -70,10 +67,8 @@ static void gen_rand_op()
   }
 }
 
-// 【修改】实现递归生成逻辑
 static void gen_rand_expr()
 {
-  // 限制表达式长度，防止递归过深导致栈溢出或 buffer 溢出
   if (buf_pos > 1000)
   {
     gen_num();
@@ -111,15 +106,12 @@ int main(int argc, char *argv[])
   int i;
   for (i = 0; i < loop; i++)
   {
-    // 【关键修改】每次循环必须重置位置
     buf_pos = 0;
     buf[0] = '\0';
 
     gen_rand_expr();
-    // 封口，确保字符串结束
     buf[buf_pos] = '\0';
 
-    // 安全检查：防止生成空串
     if (strlen(buf) == 0)
       continue;
 
@@ -130,7 +122,6 @@ int main(int argc, char *argv[])
     fputs(code_buf, fp);
     fclose(fp);
 
-    // 编译代码，2>/dev/null 屏蔽警告
     int ret = system("gcc /tmp/.code.c -o /tmp/.expr 2>/dev/null");
     if (ret != 0)
       continue;

@@ -85,7 +85,6 @@ static bool make_token(char *e) {
   int position = 0;
   int i;
   regmatch_t pmatch;
-  printf("【调试】我是新程序！数组大小是 65536！nr_token地址: %p\n", &nr_token);
 
   nr_token = 0;
 
@@ -128,7 +127,7 @@ static bool make_token(char *e) {
           break;
           if (nr_token >= 65536)
           {
-            panic("Token 太多啦！请把 tokens 数组改得更大！");
+            panic("Error: Token buffer overflow! Please increase the tokens array size!");
           }
           break;
         }
@@ -141,7 +140,7 @@ static bool make_token(char *e) {
       return false;
     }
   }
-  printf("【调试】make_token 成功结束！共识别 %d 个 Token\n", nr_token);
+  printf("[Debug] make_token succeeded! Total tokens: %d\n\n", nr_token);
   return true;
 }
 
@@ -195,7 +194,7 @@ int find_main_operator(int p, int q)
 
   if (op != -1)
     return op;
-  paren = 0; // 重置计数器，非常重要！
+  paren = 0;
   for (int i = p; i <= q; i++)
   {
     if (tokens[i].type == '(')
@@ -239,14 +238,14 @@ static word_t eval(int p, int q)
     int op = find_main_operator(p, q);
     if (op == -1)
     {
-      printf("【错误】无法在 [%d, %d] 范围内找到主运算符！\n", p, q);
-      printf("当前处理的表达式片段: ");
+      printf("[Error] Main operator not found in range [%d, %d]!\n", p, q);
+      printf("Current expression substring: ");
       for (int k = p; k <= q; k++)
       {
         printf("%s", tokens[k].str);
       }
       printf("\n");
-      return 0; // 或者 assert(0);
+      return 0;
     }
     // Recursively evaluate both sides
     word_t val1 = eval(p, op - 1);

@@ -173,53 +173,53 @@ static bool check_parentheses(int p, int q)
 
 int find_main_operator(int p, int q)
 {
-  int op = -1;      // 记录主运算符的位置
-  int paren = 0;    // 括号计数
-  int min_prec = 0; // 当前记录的最低优先级（数值越大，优先级越高，我们想要最低的）
-                    // 设定：+ - 优先级为 1， * / 优先级为 2
+  int op = -1;
+  int paren = 0; // 括号计数器
 
+  // ====================================================
+  // 第一轮：只找 + 和 - (优先级最低，是主运算符的首选)
+  // ====================================================
   for (int i = p; i <= q; i++)
   {
-    // 1. 跳过括号内的内容
     if (tokens[i].type == '(')
-    {
       paren++;
-      continue;
-    }
-    if (tokens[i].type == ')')
-    {
+    else if (tokens[i].type == ')')
       paren--;
-      continue;
-    }
-    if (paren > 0)
-      continue; // 如果在括号里，直接跳过
 
-    // 2. 判断当前 Token 是不是运算符，并获取它的优先级
-    int curr_prec = 0;
-
-    // 注意：这里要根据你自己的 enum 定义来修改
-    // 如果你的 type 就是字符本身（比如 '+'），就这样写：
-    if (tokens[i].type == '+' || tokens[i].type == '-')
-      curr_prec = 1;
-    else if (tokens[i].type == '*' || tokens[i].type == '/')
-      curr_prec = 2;
-
-    // 如果你用的是 TK_PLUS 这种 enum，请改成对应的 case
-    // else if (tokens[i].type == TK_EQ) ... (这是后续 PA 可能会有的)
-
-    else
-      continue; // 不是运算符（是数字），跳过
-
-    // 3. 核心逻辑：寻找“优先级最低”且“最右边”的运算符
-    // 这里的 <= 是关键！
-    // 当优先级相同时，我们更新 op，这样就能取到更靠右的那个
-    // 例如 1 + 2 + 3，遇到第二个 + 时，优先级一样，更新 op，主运算符变成第二个 +
-    // 这样分割成 (1+2) + 3，先算左边，符合左结合律
-
-    if (op == -1 || curr_prec <= min_prec)
+    // 只有当我们在括号外面时 (paren == 0)
+    if (paren == 0)
     {
-      op = i;
-      min_prec = curr_prec;
+      // 如果遇到 + 或 -，直接更新 op
+      // 因为我们是从左到右扫描，遇到的每一个都会覆盖前一个
+      // 这样循环结束时，op 自然就是“最右边”的那一个
+      if (tokens[i].type == '+' || tokens[i].type == '-')
+      {
+        op = i;
+      }
+    }
+  }
+
+  // 如果第一轮找到了（op不再是-1），直接返回！不用看乘除了！
+  if (op != -1)
+    return op;
+
+  // ====================================================
+  // 第二轮：如果没有加减，只有乘除，那就在这里找
+  // ====================================================
+  paren = 0; // 重置计数器，非常重要！
+  for (int i = p; i <= q; i++)
+  {
+    if (tokens[i].type == '(')
+      paren++;
+    else if (tokens[i].type == ')')
+      paren--;
+
+    if (paren == 0)
+    {
+      if (tokens[i].type == '*' || tokens[i].type == '/')
+      {
+        op = i;
+      }
     }
   }
 

@@ -116,9 +116,9 @@ static bool make_token(char *e) {
           }
           strncpy(tokens[nr_token].str, substr_start, substr_len);
           tokens[nr_token].str[substr_len] = '\0';
-          tokens[nr_token].type = rules[i].token_type; // 设置类型
-          nr_token++;                                  // 记得这里也要加
-          break;                                       // ❌ 加上 break，不要穿透到 default
+          tokens[nr_token].type = rules[i].token_type; 
+          nr_token++;                                 
+          break;                                       
         default:
           strncpy(tokens[nr_token].str, substr_start, substr_len);
           tokens[nr_token].str[substr_len] = '\0';
@@ -174,11 +174,8 @@ static bool check_parentheses(int p, int q)
 int find_main_operator(int p, int q)
 {
   int op = -1;
-  int paren = 0; // 括号计数器
+  int paren = 0;
 
-  // ====================================================
-  // 第一轮：只找 + 和 - (优先级最低，是主运算符的首选)
-  // ====================================================
   for (int i = p; i <= q; i++)
   {
     if (tokens[i].type == '(')
@@ -186,12 +183,9 @@ int find_main_operator(int p, int q)
     else if (tokens[i].type == ')')
       paren--;
 
-    // 只有当我们在括号外面时 (paren == 0)
     if (paren == 0)
     {
-      // 如果遇到 + 或 -，直接更新 op
-      // 因为我们是从左到右扫描，遇到的每一个都会覆盖前一个
-      // 这样循环结束时，op 自然就是“最右边”的那一个
+
       if (tokens[i].type == '+' || tokens[i].type == '-')
       {
         op = i;
@@ -199,13 +193,8 @@ int find_main_operator(int p, int q)
     }
   }
 
-  // 如果第一轮找到了（op不再是-1），直接返回！不用看乘除了！
   if (op != -1)
     return op;
-
-  // ====================================================
-  // 第二轮：如果没有加减，只有乘除，那就在这里找
-  // ====================================================
   paren = 0; // 重置计数器，非常重要！
   for (int i = p; i <= q; i++)
   {
@@ -251,7 +240,6 @@ static word_t eval(int p, int q)
     if (op == -1)
     {
       printf("【错误】无法在 [%d, %d] 范围内找到主运算符！\n", p, q);
-      // 打印出这段有问题的表达式，方便调试
       printf("当前处理的表达式片段: ");
       for (int k = p; k <= q; k++)
       {

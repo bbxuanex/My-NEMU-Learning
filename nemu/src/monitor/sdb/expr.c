@@ -26,6 +26,7 @@ enum
   TK_EQ,
   TK_DEC,
   TK_HEX,
+  TK_REG,
 
   /* TODO: Add more token types */
 
@@ -40,16 +41,17 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {" +", TK_NOTYPE}, // spaces
-    {"\\+", '+'},      // plus
-    {"==", TK_EQ},     // equal
-    {"-", '-'},        // differ
-    {"\\*", '*'},      // multiply
-    {"/", '/'},        // chuhao
-    {"\\(", '('},      // left
-    {"\\)", ')'},      // right
-    {"0x[0-9a-fA-F]+", TK_HEX},//Hexadecimal
-    {"[0-9]+", TK_DEC}, // Decimal
+    {" +", TK_NOTYPE},          // spaces
+    {"\\+", '+'},               // plus
+    {"==", TK_EQ},              // equal
+    {"-", '-'},                 // differ
+    {"\\*", '*'},               // multiply
+    {"/", '/'},                 // chuhao
+    {"\\(", '('},               // left
+    {"\\)", ')'},               // right
+    {"0x[0-9a-fA-F]+", TK_HEX}, // Hexadecimal
+    {"[0-9]+", TK_DEC},         // Decimal
+    {"\\$[a-zA-Z0-9]+", TK_REG},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -101,6 +103,14 @@ static bool make_token(char *e) {
         switch (rules[i].token_type) {
         case TK_NOTYPE:
           // Do nothing for spaces, just skip
+          break;
+        case TK_REG:
+          tokens[nr_token].type = TK_REG;
+          if (substr_len < 32)
+          {
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0';
+          }
           break;
 
         case TK_DEC:
@@ -220,6 +230,17 @@ static word_t eval(int p, int q)
   {
     // Base case: single number
     // Convert string to unsigned long. 0 means auto-detect base (10 or 16)
+    if (tokens[p].type == TK_REG)
+    {
+      bool success;
+      word_t val = isa_reg_str2val(tokens[p].str + 1, &success);
+      if (!success)
+      {
+        printf("Unknown register: %s\n", tokens[p].str);
+        return 0;
+      }
+      return val;
+    }
     return strtoul(tokens[p].str, NULL, 0);
   }
   else if (check_parentheses(p, q) == true)

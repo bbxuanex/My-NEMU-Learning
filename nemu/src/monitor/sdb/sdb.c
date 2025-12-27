@@ -184,17 +184,6 @@ static int cmd_info(char *args)
   }
   return 0;
 }
-static int cmd_w_wrapper(char *args)
-{
-  //too long 
-  return cmd_w(args);
-}
-
-static int cmd_d_wrapper(char *args)
-{
-  //too long
-  return cmd_d(args);
-}
 static int cmd_help(char *args);
 static int cmd_p(char *args)
 {
@@ -233,8 +222,8 @@ static struct
     {"info", "Display program status (r: registers,w: watchpoints)", cmd_info},
     {"x", "Scan memory (x N EXPR)", cmd_x},
     {"p", "Evaluate expression", cmd_p},
-    {"w", "Set a watchpoint", cmd_w_wrapper},
-    {"d", "Delete a watchpoint", cmd_d_wrapper},
+    {"w", "Set a watchpoint", cmd_w},
+    {"d", "Delete a watchpoint", cmd_d},
     /* TODO: Add more commands */
 
 };

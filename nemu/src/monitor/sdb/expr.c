@@ -230,6 +230,7 @@ static word_t eval(int p, int q)
   {
     // Base case: single number
     // Convert string to unsigned long. 0 means auto-detect base (10 or 16)
+    printf("DEBUG: eval single token. Type: %d, Str: %s\n", tokens[p].type, tokens[p].str);
     if (tokens[p].type == TK_REG)
     {
       bool success;

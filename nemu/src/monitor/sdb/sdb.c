@@ -139,6 +139,28 @@ static int cmd_info(char *args)
 }
 
 static int cmd_help(char *args);
+static int cmd_p(char *args)
+{
+  if (args == NULL)
+  {
+    printf("No expression given.\n");
+    return 0;
+  }
+
+  bool success = false;
+  word_t result = expr(args, &success);
+
+  if (success)
+  {
+    printf("Decimal: %u\nHex:     0x%x\n", result, result);
+  }
+  else
+  {
+    printf("Expression evaluation failed.\n");
+  }
+
+  return 0;
+}
 
 static struct
 {
@@ -152,6 +174,7 @@ static struct
     {"si", "Step N instruction", cmd_si},
     {"info", "Display program status (r: registers,w: watchpoints)", cmd_info},
     {"x", "Scan memory (x N EXPR)", cmd_x},
+    {"p", "Evaluate expression",cmd_p},
 
     /* TODO: Add more commands */
 

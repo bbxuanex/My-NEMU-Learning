@@ -20,8 +20,12 @@
  */
 #include <regex.h>
 
-enum {
-  TK_NOTYPE = 256, TK_EQ,
+enum
+{
+  TK_NOTYPE = 256,
+  TK_EQ,
+  TK_DEC,
+  TK_HEX,
 
   /* TODO: Add more token types */
 
@@ -32,13 +36,20 @@ static struct rule {
   int token_type;
 } rules[] = {
 
-  /* TODO: Add more rules.
-   * Pay attention to the precedence level of different rules.
-   */
+    /* TODO: Add more rules.
+     * Pay attention to the precedence level of different rules.
+     */
 
-  {" +", TK_NOTYPE},    // spaces
-  {"\\+", '+'},         // plus
-  {"==", TK_EQ},        // equal
+    {" +", TK_NOTYPE}, // spaces
+    {"\\+", '+'},      // plus
+    {"==", TK_EQ},     // equal
+    {"-", '-'},        // differ
+    {"\\*", '*'},      // multiply
+    {"/", '/'},        // chuhao
+    {"\\(", '('},      // left
+    {"\\)", ')'},      // right
+    {"0x[0-9a-fA-F]+", TK_HEX},//Hexadecimal
+    {"[0-9]+", TK_DEC}, // Decimal
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -89,15 +100,26 @@ static bool make_token(char *e) {
 
         position += substr_len;
 
-        /* TODO: Now a new token is recognized with rules[i]. Add codes
-         * to record the token in the array `tokens'. For certain types
-         * of tokens, some extra actions should be performed.
-         */
+        
 
         switch (rules[i].token_type) {
-          default: TODO();
-        }
+        case TK_NOTYPE:
+          // Do nothing for spaces, just skip
+          break;
 
+        case TK_DEC:
+        case TK_HEX:
+          if (substr_len >= 32)
+          {
+            panic("buffer overflow");
+          }
+          strncpy(tokens[nr_token].str, substr_start, substr_len);
+          tokens[nr_token].str[substr_len] = '\0';
+        default:
+          tokens[nr_token].type = rules[i].token_type;
+          nr_token++;
+          break;
+        }
         break;
       }
     }
@@ -111,6 +133,133 @@ static bool make_token(char *e) {
   return true;
 }
 
+static bool check_parentheses(int p, int q)
+{
+  // If the expression does not start with '(' or end with ')', return false
+  if (tokens[p].type != '(' || tokens[q].type != ')')
+  {
+    return false;
+  }
+
+  int balance = 0; // Counter for parenthesis balance
+
+  // Iterate from p to q-1 (exclude the last parenthesis)
+  for (int i = p; i < q; i++)
+  {
+    if (tokens[i].type == '(')
+      balance++;
+    if (tokens[i].type == ')')
+      balance--;
+
+    // If balance becomes 0, it means the first '(' is closed before the end
+    // Example: (1 + 2) * (3 + 4) -> returns false
+    if (balance == 0)
+      return false;
+  }
+
+  // If loop finishes, check if parentheses are balanced
+  return balance == 0;
+}
+
+static int find_main_operator(int p, int q)
+{
+  int op = -1;         // Position of the main operator
+  int balance = 0;     // Parenthesis level
+  int current_pri = 0; // Priority of current operator
+  int best_pri = 0;    // Priority of the best operator found so far
+
+  for (int i = p; i <= q; i++)
+  {
+    int type = tokens[i].type;
+
+    // Handle parentheses: skip content inside them
+    if (type == '(')
+    {
+      balance++;
+      continue;
+    }
+    if (type == ')')
+    {
+      balance--;
+      continue;
+    }
+
+    // Only look for operators outside of parentheses
+    if (balance != 0)
+      continue;
+
+    // Skip numbers (they are not operators)
+    if (type == TK_DEC || type == TK_HEX)
+      continue;
+
+    // Assign priority (smaller number = lower priority = main operator)
+    if (type == TK_EQ)
+      current_pri = 1; // Lowest priority
+    else if (type == '+' || type == '-')
+      current_pri = 4;
+    else if (type == '*' || type == '/')
+      current_pri = 5; // Highest priority
+    else
+      continue; // Not a supported operator
+
+    // Update main operator if:
+    // 1. No operator found yet (op == -1)
+    // 2. Found an operator with lower or equal priority (right-associativity)
+    if (op == -1 || current_pri <= best_pri)
+    {
+      op = i;
+      best_pri = current_pri;
+    }
+  }
+  return op;
+}
+static word_t eval(int p, int q)
+{
+  if (p > q)
+  {
+    // Bad expression
+    return 0;
+  }
+  else if (p == q)
+  {
+    // Base case: single number
+    // Convert string to unsigned long. 0 means auto-detect base (10 or 16)
+    return strtoul(tokens[p].str, NULL, 0);
+  }
+  else if (check_parentheses(p, q) == true)
+  {
+    // The expression is surrounded by parentheses, remove them
+    return eval(p + 1, q - 1);
+  }
+  else
+  {
+    // General case: split by main operator
+    int op = find_main_operator(p, q);
+
+    // Recursively evaluate both sides
+    word_t val1 = eval(p, op - 1);
+    word_t val2 = eval(op + 1, q);
+
+    // Perform calculation based on the operator type
+    switch (tokens[op].type)
+    {
+    case '+':
+      return val1 + val2;
+    case '-':
+      return val1 - val2;
+    case '*':
+      return val1 * val2;
+    case '/':
+      // Avoid division by zero
+      return (val2 == 0 ? 0 : val1 / val2);
+    case TK_EQ:
+      return val1 == val2;
+    default:
+      assert(0); // Should not reach here
+    }
+  }
+  return 0;
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -118,8 +267,7 @@ word_t expr(char *e, bool *success) {
     return 0;
   }
 
-  /* TODO: Insert codes to evaluate the expression. */
-  TODO();
-
-  return 0;
+  /* Start evaluation from the first to the last token */
+  *success = true;
+  return eval(0, nr_token - 1);
 }

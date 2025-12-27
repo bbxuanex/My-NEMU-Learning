@@ -49,28 +49,6 @@ void init_wp_pool()
 
   head = NULL;
   free_ = wp_pool;
-  // --- 临时测试区 ---
-  WP *a = new_wp(); // 借第1个
-  WP *b = new_wp(); // 借第2个
-  WP *c = new_wp(); // 借第3个
-
-  Assert(head == c, "head 应该是最后借出的 c");
-  Assert(head->next == b, "c 的下一个应该是 b");
-  Assert(b->next == a, "b 的下一个应该是 a");
-
-  free_wp(b); // 归还中间的 b
-
-  Assert(head == c, "head 依然是 c");
-  Assert(c->next == a, "c 的下一个应该变成 a (b被删了)");
-
-  free_wp(c); // 归还头部的 c
-  Assert(head == a, "head 应该变成 a");
-
-  free_wp(a); // 归还最后一个
-  Assert(head == NULL, "大家都还完了，head 应该是 NULL");
-
-  printf("恭喜！监视点池管理逻辑测试通过！\n");
-  // --- 测试结束 ---
 }
 WP *new_wp()
 {
@@ -124,7 +102,12 @@ bool scan_watchpoint()
     bool success;
     // Evaluate the expression
     word_t new_val = expr(p->expr, &success);
-    // Note:If success is false,you might want to handle the error or ignore it.
+    if (!success)
+    {
+      // Note:If success is false,you might want to handle the error or ignore it.
+      printf("Warning: Watchpoint %d expression evaluation failed!\n", p->NO);
+      return false;
+    }
     // Compare the new value with the old value
     if (new_val != p->old_val)
     {
@@ -139,5 +122,5 @@ bool scan_watchpoint()
   }
   return found_change;
 }
-
+/* initial implement by [shuimushi] on 2025.12.27 */
 /* TODO: Implement the functionality of watchpoint */

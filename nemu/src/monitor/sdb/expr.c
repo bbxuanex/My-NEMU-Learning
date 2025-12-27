@@ -243,7 +243,18 @@ static word_t eval(int p, int q)
   {
     // General case: split by main operator
     int op = find_main_operator(p, q);
-
+    if (op == -1)
+    {
+      printf("【错误】无法在 [%d, %d] 范围内找到主运算符！\n", p, q);
+      // 打印出这段有问题的表达式，方便调试
+      printf("当前处理的表达式片段: ");
+      for (int k = p; k <= q; k++)
+      {
+        printf("%s", tokens[k].str);
+      }
+      printf("\n");
+      return 0; // 或者 assert(0);
+    }
     // Recursively evaluate both sides
     word_t val1 = eval(p, op - 1);
     word_t val2 = eval(op + 1, q);

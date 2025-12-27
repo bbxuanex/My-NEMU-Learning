@@ -112,16 +112,13 @@ static bool make_token(char *e)
           // Do nothing for spaces, just skip
           break;
         case TK_REG:
-          // 在成功匹配并添加 token 后
-          printf("DEBUG make_token: matched '%.*s' as type %d\n",
-                 substr_len, substr_start, rules[i].token_type);
-
           tokens[nr_token].type = TK_REG;
           if (substr_len < 32)
           {
             strncpy(tokens[nr_token].str, substr_start, substr_len);
             tokens[nr_token].str[substr_len] = '\0';
           }
+          nr_token++;
           break;
 
         case TK_DEC:

@@ -25,19 +25,36 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
-  int length = sizeof(cpu.gpr) / sizeof(cpu.gpr[0]); // 应该是 32
+  int length = sizeof(cpu.gpr) / sizeof(cpu.gpr[0]);
 
   for (int i = 0; i < length; i++)
   {
-    // %-4s: 左对齐，占4个字符宽
-    // 0x%08x: 十六进制打印，占8位，不足补0
     printf("%-4s 0x%08x %d\n", reg_name(i), cpu.gpr[i], cpu.gpr[i]);
   }
 
-  // 别忘了打印 PC (Program Counter)
   printf("pc   0x%08x %d\n", cpu.pc, cpu.pc);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  // 1. Check if the requested register is the Program Counter (PC)
+  if (strcmp(s, "pc") == 0)
+  {
+    *success = true;
+    return cpu.pc;
+  }
+
+  // 2. Iterate through all 32 General Purpose Registers (GPRs)
+  // 'regs' is the array containing register names (e.g., "zero", "ra", "sp") defined above
+  for (int i = 0; i < 32; i++)
+  {
+    if (strcmp(s, regs[i]) == 0)
+    {
+      *success = true;
+      return cpu.gpr[i];
+    }
+  }
+
+  // 3. If no match is found after checking PC and all GPRs
+  *success = false;
   return 0;
 }

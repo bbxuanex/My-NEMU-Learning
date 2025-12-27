@@ -229,7 +229,6 @@ int find_main_operator(int p, int q)
 
 static word_t eval(int p, int q)
 {
-  printf("DEBUG eval: p=%d, q=%d\n", p, q);
   if (p > q)
   {
     // Bad expression
@@ -239,7 +238,6 @@ static word_t eval(int p, int q)
   {
     // Base case: single number
     // Convert string to unsigned long. 0 means auto-detect base (10 or 16)
-    // 在 make_token() 匹配成功后
 
     if (tokens[p].type == TK_REG)
     {

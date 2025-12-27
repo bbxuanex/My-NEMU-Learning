@@ -25,7 +25,9 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
-
+int cmd_w(char *args);
+int cmd_d(char *args);
+void list_watchpoint();
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char *rl_gets()
 {
@@ -174,8 +176,7 @@ static int cmd_info(char *args)
   }
   else if (strcmp(args, "w") == 0)
   {
-    // TODO: handle watchpoints
-    printf("Watchpoints not implemented yet.\n");
+    list_watchpoint();
   }
   else
   {
@@ -183,7 +184,17 @@ static int cmd_info(char *args)
   }
   return 0;
 }
+static int cmd_w_wrapper(char *args)
+{
+  //too long 
+  return cmd_w(args);
+}
 
+static int cmd_d_wrapper(char *args)
+{
+  //too long
+  return cmd_d(args);
+}
 static int cmd_help(char *args);
 static int cmd_p(char *args)
 {
@@ -222,7 +233,8 @@ static struct
     {"info", "Display program status (r: registers,w: watchpoints)", cmd_info},
     {"x", "Scan memory (x N EXPR)", cmd_x},
     {"p", "Evaluate expression", cmd_p},
-
+    {"w", "Set a watchpoint", cmd_w_wrapper},
+    {"d", "Delete a watchpoint", cmd_d_wrapper},
     /* TODO: Add more commands */
 
 };

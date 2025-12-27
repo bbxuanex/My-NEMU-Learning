@@ -20,9 +20,7 @@
 typedef struct watchpoint
 {
   int NO;
-  // 记住用户的表达式字符串
   char expr[128];
-  // 记住表达式上一次的值，和新值做比较
   word_t old_val;
   struct watchpoint *next;
 
@@ -52,7 +50,6 @@ void init_wp_pool()
 }
 WP *new_wp()
 {
-  // 检查是否还有空闲监视点
   Assert(free_ != NULL, "No free watchpoints");
   // Detach a node from the 'free_'list
   WP *wp = free_;
@@ -122,5 +119,82 @@ bool scan_watchpoint()
   }
   return found_change;
 }
-/* initial implement by [shuimushi] on 2025.12.27 */
-/* TODO: Implement the functionality of watchpoint */
+int cmd_w(char *args)
+{
+  if (args == NULL)
+  {
+    printf("Usage: w <expression>\n");
+    return 0;
+  }
+
+  // 1. Evaluate the expression
+  bool success;
+  uint32_t val = expr(args, &success);
+  if (!success)
+  {
+    printf("Error: Invalid expression.\n");
+    return 0;
+  }
+
+  // 2. Allocate a new watchpoint
+  WP *wp = new_wp();
+
+  // 3. Assign ID (Simple static counter)
+  static int wp_no_counter = 1;
+  wp->NO = wp_no_counter++;
+
+  // 4. Store the expression and its current value
+  strcpy(wp->expr, args);
+  wp->old_val = val;
+
+  printf("Watchpoint %d: %s\n", wp->NO, wp->expr);
+  return 0;
+}
+int cmd_d(char *args)
+{
+  if (args == NULL)
+  {
+    printf("Usage: d <N>\n");
+    return 0;
+  }
+
+  // Parse the ID from the argument
+  int no = atoi(args);
+
+  // Traverse the active list to find the node with the matching ID
+  WP *p = head;
+  while (p != NULL)
+  {
+    if (p->NO == no)
+    {
+      free_wp(p); // Free the node if found
+      printf("Watchpoint %d deleted.\n", no);
+      return 0;
+    }
+    p = p->next;
+  }
+
+  printf("Watchpoint %d not found.\n", no);
+  return 0;
+}
+void list_watchpoint()
+{
+  if (head == NULL)
+  {
+    printf("No watchpoints.\n");
+    return;
+  }
+
+  // Print the header
+  printf("%-8s %-16s %-16s\n", "NO", "Expr", "Old Value");
+
+  // Traverse the list and print each node
+  WP *p = head;
+  while (p != NULL)
+  {
+    printf("%-8d %-16s 0x%08x\n", p->NO, p->expr, p->old_val);
+    p = p->next;
+  }
+}
+  /* initial implement by [shuimushi] on 2025.12.27 */
+  /* TODO: Implement the functionality of watchpoint */

@@ -35,27 +35,27 @@ void isa_reg_display() {
   printf("pc   0x%08x %d\n", cpu.pc, cpu.pc);
 }
 
-word_t isa_reg_str2val(const char *s, bool *success) {
-  // 1. Check if the requested register is the Program Counter (PC)
-  printf("DEBUG: checking reg '%s', current pc = 0x%08x\n", s, cpu.pc);
+word_t isa_reg_str2val(const char *s, bool *success)
+{
+  // 1. 先看看是不是 pc
   if (strcmp(s, "pc") == 0)
   {
     *success = true;
     return cpu.pc;
   }
 
-  // 2. Iterate through all 32 General Purpose Registers (GPRs)
-  // 'regs' is the array containing register names (e.g., "zero", "ra", "sp") defined above
-  for (int i = 0; i < 32; i++)
+  // 2. 再遍历通用寄存器 (regs 数组)
+  int i;
+  for (i = 0; i < 32; i++)
   {
-    if (strcmp(s, regs[i]) == 0)
+    if (strcmp(regs[i], s) == 0)
     {
       *success = true;
       return cpu.gpr[i];
     }
   }
 
-  // 3. If no match is found after checking PC and all GPRs
+  // 3. 都不认识，报错
   *success = false;
   return 0;
 }

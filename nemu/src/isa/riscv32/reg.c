@@ -37,6 +37,7 @@ void isa_reg_display() {
 
 word_t isa_reg_str2val(const char *s, bool *success) {
   // 1. Check if the requested register is the Program Counter (PC)
+  printf("DEBUG: checking reg '%s', current pc = 0x%08x\n", s, cpu.pc);
   if (strcmp(s, "pc") == 0)
   {
     *success = true;

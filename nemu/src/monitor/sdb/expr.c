@@ -56,9 +56,6 @@ static struct rule {
 
 static regex_t re[NR_REGEX] = {};
 
-/* Rules are used for many times.
- * Therefore we compile them only once before any usage.
- */
 void init_regex() {
   int i;
   char error_msg[128];
@@ -89,7 +86,6 @@ static bool make_token(char *e) {
   nr_token = 0;
 
   while (e[position] != '\0') {
-    /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
         char *substr_start = e + position;
@@ -140,7 +136,6 @@ static bool make_token(char *e) {
       return false;
     }
   }
-  printf("[Debug] make_token succeeded! Total tokens: %d\n\n", nr_token);
   return true;
 }
 

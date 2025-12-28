@@ -37,14 +37,14 @@ void isa_reg_display() {
 
 word_t isa_reg_str2val(const char *s, bool *success)
 {
-  // 1. 先看看是不是 pc
+  // 1. whether pc or not
   if (strcmp(s, "pc") == 0)
   {
     *success = true;
     return cpu.pc;
   }
 
-  // 2. 再遍历通用寄存器 (regs 数组)
+  // 2. scan reg array
   int i;
   for (i = 0; i < 32; i++)
   {
@@ -55,7 +55,7 @@ word_t isa_reg_str2val(const char *s, bool *success)
     }
   }
 
-  // 3. 都不认识，报错
+  // no one recognized? WRONG!
   *success = false;
   return 0;
 }

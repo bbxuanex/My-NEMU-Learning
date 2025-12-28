@@ -105,46 +105,27 @@ static bool make_token(char *e)
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
-
-        switch (rules[i].token_type)
+        if (rules[i].token_type == TK_NOTYPE)
         {
-        case TK_NOTYPE:
-          // Do nothing for spaces, just skip
-          break;
-        case TK_REG:
-          tokens[nr_token].type = TK_REG;
-          if (substr_len < 32)
-          {
-            strncpy(tokens[nr_token].str, substr_start, substr_len);
-            tokens[nr_token].str[substr_len] = '\0';
-          }
-          nr_token++;
-          break;
-
-        case TK_DEC:
-        case TK_HEX:
-          if (substr_len >= 32)
-          {
-            panic("buffer overflow");
-          }
-          strncpy(tokens[nr_token].str, substr_start, substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-          tokens[nr_token].type = rules[i].token_type;
-          nr_token++;
-          break;
-        default:
-          strncpy(tokens[nr_token].str, substr_start, substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-
-          tokens[nr_token].type = rules[i].token_type;
-          nr_token++;
-          break;
-          if (nr_token >= 65536)
-          {
-            panic("Error: Token buffer overflow! Please increase the tokens array size!");
-          }
           break;
         }
+
+        if (substr_len >= 32)
+        {
+          panic("Buffer overflow: token is too long!");
+        }
+
+        Token *token = &tokens[nr_token];
+        strncpy(token->str, substr_start, substr_len);
+        token->str[substr_len] = '\0';
+        token->type = rules[i].token_type;
+        nr_token++;
+
+        if (nr_token >= 65536)
+        {
+          panic("Error: Token buffer overflow!");
+        }
+
         break;
       }
     }

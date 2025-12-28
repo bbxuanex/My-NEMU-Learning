@@ -116,9 +116,12 @@ static bool make_token(char *e)
         }
 
         Token *token = &tokens[nr_token];
+
         strncpy(token->str, substr_start, substr_len);
+
         token->str[substr_len] = '\0';
         token->type = rules[i].token_type;
+
         nr_token++;
 
         if (nr_token >= 65536)
@@ -153,7 +156,9 @@ static bool check_parentheses(int p, int q)
       n++;
     if (tokens[i].type == ')')
       n--;
-
+    //Logic: 'cuz i ends at q while not reaching q, 
+    //so if ()couple exist only on two ends, the value of n shoud be 1!
+    //it means that some other ')'appears before the ')'paired with '(' when n==0
     if (n == 0)
       return false;
   }
@@ -161,7 +166,7 @@ static bool check_parentheses(int p, int q)
   if (tokens[q].type == ')')
     n--;
 
-  return n == 0;
+  return n == 0;// true means parentheses could be abandoned safely,,false? the opposite!
 }
 
 int find_main_operator(int p, int q)
